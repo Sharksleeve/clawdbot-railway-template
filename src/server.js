@@ -483,7 +483,7 @@ app.post("/setup/api/run", requireSetupAuth, async (req, res) => {
     await runCmd(CLAWDBOT_NODE, clawArgs(["config", "set", "gateway.bind", "loopback"]));
     await runCmd(CLAWDBOT_NODE, clawArgs(["config", "set", "gateway.port", String(INTERNAL_GATEWAY_PORT)]));
     // Trust the wrapper proxy and allow auth over HTTP (Railway terminates TLS at the edge)
-    await runCmd(CLAWDBOT_NODE, clawArgs(["config", "set", "--json", "gateway.trustedProxies", '["127.0.0.1"]']));
+    await runCmd(CLAWDBOT_NODE, clawArgs(["config", "set", "--json", "gateway.trustedProxies", '["*"]']));
     await runCmd(CLAWDBOT_NODE, clawArgs(["config", "set", "gateway.controlUi.allowInsecureAuth", "true"]));
 
     const channelsHelp = await runCmd(CLAWDBOT_NODE, clawArgs(["channels", "add", "--help"]));
