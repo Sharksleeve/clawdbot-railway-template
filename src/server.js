@@ -16,6 +16,22 @@ const PORT = Number.parseInt(process.env.CLAWDBOT_PUBLIC_PORT ?? process.env.POR
 const STATE_DIR = process.env.CLAWDBOT_STATE_DIR?.trim() || path.join(os.homedir(), ".clawdbot");
 const WORKSPACE_DIR = process.env.CLAWDBOT_WORKSPACE_DIR?.trim() || path.join(STATE_DIR, "workspace");
 
+// Clean up stale session lock files from previous runs.
+// On Railway, a process restart leaves .lock files on the persistent volume
+// that block the new process from acquiring sessions.
+try {
+  const sessionsDir = path.join(STATE_DIR, "agents", "main", "sessions");
+  if (fs.existsSync(sessionsDir)) {
+    const stale = fs.readdirSync(sessionsDir).filter(f => f.endsWith(".lock"));
+    for (const f of stale) {
+      fs.rmSync(path.join(sessionsDir, f), { force: true });
+    }
+    if (stale.length) console.log(`[wrapper] cleaned ${stale.length} stale session lock(s)`);
+  }
+} catch (err) {
+  console.warn(`[wrapper] lock cleanup failed: ${err}`);
+}
+
 // Protect /setup with a user-provided password.
 const SETUP_PASSWORD = process.env.SETUP_PASSWORD?.trim();
 
